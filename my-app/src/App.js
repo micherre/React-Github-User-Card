@@ -1,13 +1,14 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import axios from 'axios'
+import UserCard from './component/UserCard'
+// import FollowerCard from './component/FollowerCard';
 
 class App extends React.Component {
   constructor(){
     super();
     this.state = {
       userInfo: "",
-      followerInfo: ""
+      followerInfo: [],
     }
   }
 
@@ -18,37 +19,38 @@ class App extends React.Component {
         this.setState({
           userInfo: res.data
         })
-        console.log(this.userInfo)
       })
       .catch(err => console.log(err))
 
     axios
-      .get(`{this.state.userInfo.followers_url}`)
+      .get('https://api.github.com/users/micherre/followers')
       .then(res => {
-        this.setState({
-          followerInfo: res.data
-        })
-        console.log(this.followerInfo)
+          res.data.map(user => {
+            axios
+            .get(`https://api.github.com/users/${user.login}`)
+            .then(res =>
+              {this.setState({followerInfo: [...this.state.followerInfo,res.data]})})
+          })
       })
       .catch(err => console.log(err))
   } 
   render(){
     return(
       <div className="App">
-        <div className="Card">
-          <img src={this.state.userInfo.avatar_url}/>
-          <div className="Card-Info">
-            <h2>{this.state.userInfo.login}</h2>
-            <p>Location:{this.state.userInfo.location}</p>
-            <p>Profile
-              <a href={this.state.userInfo.html_url}>{this.state.userInfo.html_url}</a>
-            </p>
-            <p>Followers: {this.state.followerInfo.length}</p>
-            <p>Bio: {this.state.userInfo.bio}</p>
-          </div>
+        {console.log(this.state.userInfo)}
+        <div className="User">
+          <UserCard 
+            userInfo={this.state.userInfo}
+          />
         </div>
-        <userCard userInfo={this.state.userInfo}/>
+        <div className="Followers">
+        {this.state.followerInfo.map(follower => {
+          return <UserCard userInfo = {follower} />
+        })}
+        </div>
       </div>
     )
   }
 }
+
+export default App;
